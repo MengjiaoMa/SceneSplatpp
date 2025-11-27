@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="3D Vision-Language Models using Language-aligned Gaussian Splats for Embodied Reasoning and Beyond">
+  <meta name="keywords" content="3D VLM, embodied scene understanding, Gaussians">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SceneSplat++</title>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-PYVRSFMDRL');
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.svg">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+
+
+  <style>
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid #ccc;
+      cursor: pointer;
+    }
+    .tab {
+      padding: 1rem 2rem;
+      border: none;
+      background: none;
+      font-weight: bold;
+    }
+    .tab.active {
+      border-bottom: 3px solid #ff6a00;
+      color: #ff6a00;
+    }
+    .tab-content {
+      display: none;
+      padding: 1.5rem 0;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .tabs2 {
+      display: flex;
+      border-bottom: 2px solid #ccc;
+      cursor: pointer;
+    }
+    .tab2 {
+      padding: 1rem 2rem;
+      border: none;
+      background: none;
+      font-weight: bold;
+    }
+    .tab2.active {
+      border-bottom: 3px solid #007bff;
+      color: #007bff;
+    }
+    .tab-content2 {
+      display: none;
+      padding: 1.5rem 0;
+    }
+    .tab-content2.active {
+      display: block;
+    }
+    .tabs_outer {
+      display: flex;
+      border-bottom: 2px solid #ccc;
+      cursor: pointer;
+    }
+    .tab_outer {
+      padding: 1rem 5rem;
+      border: none;
+      background: none;
+      font-weight: bold;
+    }
+    .tab_outer.active {
+      border-bottom: 3px solid #007bff;
+      color: #007bff;
+    }
+    .tab_outer-content {
+      display: none;
+      padding: 1.5rem 0;
+    }
+    .tab_outer-content.active {
+      display: block;
+    }
+    .tabs_obj {
+      display: flex;
+      border-bottom: 2px solid #ccc;
+      cursor: pointer;
+    }
+    .tab_obj {
+      padding: 1rem 2rem;
+      border: none;
+      background: none;
+      font-weight: bold;
+    }
+    .tab_obj.active {
+      border-bottom: 3px solid #058d56;
+      color: #058d56;
+    }
+    .tab_obj-content {
+      display: none;
+      padding: 1.5rem 0;
+    }
+    .tab_obj-content.active {
+      display: block;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 0.75rem;
+      text-align: center;
+    }
+    th {
+      background-color: #f7f7f7;
+    }
+    .remark {
+      margin-top: 1rem;
+      font-style: italic;
+      color: #333;
+    }
+    .chart {
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+    .chart img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    table.paper-table {
+    border-collapse: collapse;
+    width: 100%;
+    font-family: sans-serif;
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .highlight-blue {
+    background-color: #007bff95;
+    font-weight: bold;
+  }
+
+  .info-toggle {
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+    background: #007acc;
+    color: white;
+    margin-top: 0.5em;
+    border-radius: 20%;
+    width: 1.8em;
+    height: 1.3em;
+    font-size: 1.3em;
+    line-height: 1.2em;
+    text-align: center;
+    font-weight: bold;
+    border: none;
+  }
+
+  .info-content {
+    display: none;
+    margin-top: 0.8em;
+    background: #f0f8ff;
+    padding: 1em;
+    border-radius: 2pt;
+    border: 1px solid #cce7ff;
+    font-size: 0.95em;
+  }
+
+  </style>
+</head>
+<body>
+
+
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">SceneSplat++<br />
+            <p class="title is-3 publication-title">A Large Dataset and Comprehensive<br>
+Benchmark for Language Gaussian Splatting</p>
+          </h1>          
+
+          <!-- <h1 class="title is-4" style="color: #5c5c5c;">NeurIPS 2023</h1> -->
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://insait.ai/anna-maria-halacheva/">Anna-Maria Halacheva</a><sup>1</sup>, 
+            </span>
+
+            <span class="author-block">
+              <a href="https://jannicozaech.github.io/">Jan-Nico Zaech</a><sup>1</sup>, 
+            </span>
+            <span class="author-block">
+              <a href="https://xiwang1212.github.io/homepage/"> Xi Wang</a><sup>1, 2, 3</sup>, 
+            </span>
+            
+            <span class="author-block">
+              <a href="https://insait.ai/dr-danda-paudel/"> Danda Pani Paudel</a> <sup>1</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://insait.ai/prof-luc-van-gool/"> Luc Van Gool</a><sup>1</sup>
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block" style="margin-right: 1em;"><sup>1</sup>INSAIT, Sofia University "St. Kliment Ohridski"</span>
+            <span class="author-block" style="margin-right: 1em;"><sup>2</sup>ETH Zurich</span>
+            <span class="author-block" style="margin-right: 1em;"><sup>3</sup>TU Munich</span>
+          </div>
+
+          <div style="display: flex; justify-content: center; gap: 2rem; align-items: center;">
+            <img src="static/images/insait.png" alt="Logo 1" style="width: 130px; height: auto; object-fit: contain;">
+            <img src="static/images/p_11_1.jpg" alt="Logo 2" style="width: 130px; height: auto; object-fit: contain;">
+            <!--<img src="static/images/tum.png" alt="Logo 3" style="width: 130px; height: auto; object-fit: contain;">-->
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- PDF Link. -->
+              <span class="link-block">
+                  <a href="https://arxiv.org/abs/2507.00886"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>Preprint</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href=""
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-download"></i>
+                  </span>
+                  <span>Data (Coming Soon)</span>
+                </a>
+              </span>
+              <!-- Code Link. -->
+              <span class="link-block">
+                <a href=""
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code (Coming soon)</span>
+                  </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <!--<div class="hero-body">
+      <h2 class="subtitle has-text-centered">
+         <strong>News<span class="emoji">📰: </strong> Articulate3D is accepted to and will be presented in <strong>CVPR 2025 </strong>
+      </h2>
+    </div>! -->
+    <div style="
+      background-color: #f5f5f5;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      margin-top:-2rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      font-family: 'Segoe UI', sans-serif;
+      line-height: 1.6;
+    ">
+      <h3 style="margin-bottom: 0.75rem; font-size: 1.25rem; color: #333;">TL;DR</h3>
+      <p style="margin: 0; color: #555;">
+We present GaussianVLM, the first 3D VLM operating on Gaussian splats. Each Gaussian in the scene is enriched with language features, forming a dense, scene-centric representation. A novel dual sparsifier reduces ~40k language-augmented Gaussians to just 132 tokens, retaining task-relevant and location-relevant information. This enables open-vocabulary, detector-free reasoning and yields state-of-the-art performance on both scene- and object-centric embodied benchmarks.    </div>
+
+    <div class="content has-text-justified">
+      <img src="static/images/teaser_ral.png" class="interpolation-image">
+      <p>   
+      </p>
+    </div>
+    <div class="hero-body">
+      <!--<h2 class="subtitle has-text-centered">
+      <strong>GaussianVLM</strong> embeds language directly into spatial 3D representations using Gaussian Splatting, enabling object-free, high-fidelity scene understanding and reasoning for embodied agents.</h2>
+      -->
+      <!--<div class="box" style="max-width: 1000px; margin: 2rem auto;">
+        <h3 class="title is-5">Project Highlights</h3>
+        <div class="columns is-multiline">
+          <div class="column is-half">
+            <ul style="list-style: none; padding-left: 0;">
+              <li>✅ First VLM for indoor scene understanding operating on 3D Gaussian splat representations</li>
+              <li>✅ Completely object-detector free</li>
+              <li>✅ Handles scene-centric and object-centric tasks</li>
+              <li>✅ Scene representation — language features per Gaussian</li>
+              <li>
+                ✅ Better generalization to OOD settings than SOTA models<sup>*</sup>
+              </li>
+            </ul>
+          </div>
+          <div class="column is-half">
+            <ul style="list-style: none; padding-left: 0;">
+              <li>✅ Intelligent sparsification of 40k language features to 132 tokens</li>
+              <li>➡️ Dual sparsifier modules: location-guided & task-guided</li>
+              <li>📍 Location-guided sparsifier for extracting ROI features</li>
+              <li>🎯 Task-guided sparsifier based on user task</li>
+            </ul>
+          </div>
+        </div>
+        <p class="is-size-7 has-text-grey mt-3">
+          <sup>*</sup> SOTA as of May 2025, compared to 
+          <a href="https://arxiv.org/abs/2311.18651" target="_blank">LL3DA 3D VLM</a> and 
+          <a href="https://arxiv.org/abs/2311.18651" target="_blank">ll3da</a>.
+        </p>
+      </div>-->
+
+      <section class="section">
+   <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+As multimodal language models advance, their application to 3D scene understanding is a fast-growing frontier, driving the development of 3D Vision-Language Models (VLMs). Current methods show strong dependence on object detectors, introducing processing bottlenecks and limitations in taxonomic flexibility.  To address these limitations, we propose a scene-centric 3D VLM for 3D Gaussian splat scenes that employs language- and task-aware scene representations. Our approach directly embeds rich linguistic features into the 3D scene representation by associating language with each Gaussian primitive, achieving early modality alignment. To process the resulting dense representations, we introduce a dual sparsifier that distills them into compact, task-relevant tokens via task-guided and location-guided pathways, producing sparse, task-aware global and local scene tokens. Notably, we present the first Gaussian splatting-based VLM, leveraging photorealistic 3D representations derived from standard RGB images, demonstrating strong generalization: it improves performance of prior 3D VLM (LL3DA) five folds, in out-of-the-domain settings.      
+          </p>
+        </div>
+      </div>
+    </div>
+</section>
+
+      <section class="section">
+        <div class="container">
+          <h2 class="title is-4 has-text-centered mb-5">🔍 Project Highlights</h2>
+
+          <div class="columns is-multiline is-variable is-6">
+            <!-- Highlight 1 -->
+            <div class="column is-half">
+              <div class="box has-shadow">
+                <p class="is-size-5 mb-2">🗣️ <strong>Built on Visuo-Linguistic 3D Maps</strong></p>
+                <p class="has-text-grey-dark">
+                  Constructs maps of 3D Gaussian splats enriched with language features for vision-language spatial reasoning.
+                </p>
+              </div>
+            </div>
+
+            <!-- Highlight 2 -->
+            <div class="column is-half">
+              <div class="box has-shadow">
+                <p class="is-size-5 mb-2">🔍 <strong>Object Detector-Free</strong></p>
+                <p class="has-text-grey-dark">
+                  GaussianVLM does NOT rely on object detectors, ensuring scene-centric representations and open vocabulary support.
+                </p>
+              </div>
+            </div>
+
+            <!-- Highlight 3 -->
+            <div class="column is-half">
+              <div class="box has-shadow">
+                <p class="is-size-5 mb-2">💡 <strong>Novel Dual Sparsification</strong></p>
+                <p class="has-text-grey-dark">
+                  Sparsifiers reduce ~40k tokens to 132, making maps interpretable for LLMs via two sparsifiers - task-guided, and location-aware.
+                </p>
+              </div>
+            </div>
+
+            <!-- Highlight 4 -->
+            <div class="column is-half">
+              <div class="box has-shadow">
+                <p class="is-size-5 mb-2">🌎 <strong>OOD Generalization</strong></p>
+                <p class="has-text-grey-dark">
+                  Outperforms prior methods in real-world RGB-derived 3D datasets due to Gaussian splat utilization.
+                </p>
+              </div>
+            </div>
+
+            <!-- Highlight 5 -->
+            <div class="column ">
+              <div class="box has-shadow">
+                <p class="is-size-5 mb-2">🚀 <strong>State-of-the-Art Performance</strong></p>
+                <p class="has-text-grey-dark">
+                  Outperforms leading baselines across scene- and object-centric tasks, including SQA3D and 
+                  <a href="https://arxiv.org/abs/2307.12981" target="_blank">3D-LLM</a> embodied benchmarks. 
+                </p>
+              </div>
+            </div>
+
+          
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>
+
+
+<section class="hero architecture">
+  <div class="container is-max-desktop ">
+    <div class="hero-body has-text-centered">
+        <h2 class="title is-3">GaussianVLM Architecture</h2> 
+        <img src="static/images/long.png" class="interpolation-image">
+        
+        <p>
+          The <strong>GaussianVLM</strong> architecture takes as input a user-defined task prompt—consisting of a query and an optional spatial location—and a 3D scene represented using Gaussians. A 3D vision module, the <em>SceneSplat Transformer</em>, first predicts per-Gaussian language features across the scene.
+          <br><br>
+          These dense language features are then processed by a <strong>dual sparsifier</strong>. This sparsifier includes two parallel components: (1) a <em>location-guided pathway</em> that selects Gaussians within a spatial Region of Interest (ROI) to produce ROI tokens; and (2) a <em>task-guided pathway</em> that uses cross-attention with task tokens to extract 128 task-selected tokens based on the decoder’s hidden states and dense scene features.
+          <br><br>
+          The resulting sparse representation—composed of both ROI and task-selected tokens—is then combined with the task tokens and passed to a multimodal decoder, enabling precise and grounded reasoning over the 3D scene for downstream language-vision tasks.
+        </p>
+    </div>
+  </div>
+</section>
+
+
+<section class="hero quantitative">
+  <div class="container is-max-desktop ">
+    <div class="hero-body has-text-centered">
+        <h2 class="title is-3">Quantitative Results</h2> 
+<p>
+    Our evaluation comprises scene-centric [situated QA & embodied tasks] and object-centric tasks.
+    <br>To assess real-world robustness, we also test generalization to out-of-domain (OOD) data on scenes reconstructed from RGB images, a more realistic input setting compared to traditional point cloud capture methods.
+</p>
+<button class="info-toggle" onclick="toggleInfo(this)">i</button>
+
+<!-- Content to Show/Hide -->
+<div class="info-content">
+<p>
+    <strong>Scene-centric:</strong> require comprehensive understanding of entire 3D environments—including spatial layout, agent context, and multi-turn interaction—covering benchmarks like embodied dialogue, planning, and situated question answering. These tasks demand holistic reasoning beyond individual objects. <br>
+    <br><strong>Object-centric:</strong> emphasize detailed reasoning about specific objects through captioning and question answering using localized queries and object annotations. <br>
+    <br>While our model is primarily designed to excel at scene-centric understanding without relying on explicit object detectors, it remarkably retains strong performance on object-centric benchmarks, matching or surpassing baselines that use dedicated object detection modules.
+    <br><br><strong>OOD generalization:</strong> We evaluate on ScanNet++ scenes reconstructed from RGB images using an object counting task (in-house dataset). Given a question targeting an object category (e.g., “How many chairs are in the scene?”), the model predicts the correct count. QA pairs are automatically generated from ScanNet++ instance segmentation annotations.
+  </p>
+   </div>
+<div class="tabs2">
+  <button class="tab2 active" onclick="switchTab2(0)">Situated QA</button>
+  <button class="tab2" onclick="switchTab2(1)">3D-LLM Embodied Tasks</button>
+  <button class="tab2" onclick="switchTab2(2)">Object-Centric Tasks</button>
+  <button class="tab2" onclick="switchTab2(3)">Real-World Generalization</button>
+</div>
+
+
+<div class="tab-content2 active">
+  <table>
+  <caption><b>Situated QA, SQA3D Benchmark</b></caption>
+  <thead>
+    <tr>
+      <th>Model</th>
+      <th>EM1</th>
+      <th>C</th>
+      <th>B-4</th>
+      <th>M</th>
+      <th>R</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>GPT3</td><td>41.0</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td>ClipBERT</td><td>43.3</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td>SQA3D</td><td>46.6</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td>3D-VisTA</td><td>48.5</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td>PQ3D</td><td>47.1</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td>LEO*</td><td>47.0</td><td>124.7</td><td>9.4</td><td>25.5</td><td>48.4</td></tr>
+    <tr class="highlight-blue"><td><b>Ours</b></td><td><b>49.4</b></td><td><b>129.6</b></td><td><b>17.1</b></td><td><b>26.4</b></td><td><b>50.2</b></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="tab-content2">
+    <table>
+      <caption><b>3D-LLM Embodied Tasks</b></caption>
+      <thead>
+        <tr>
+          <th rowspan="2">Model</th>
+          <th colspan="5">Embodied Dialogue</th>
+          <th colspan="5">Embodied Planning</th>
+          <th colspan="5">Scene Captioning</th>
+        </tr>
+        <tr>
+          <th>Sim</th><th>C</th><th>B-4</th><th>M</th><th>R</th>
+          <th>Sim</th><th>C</th><th>B-4</th><th>M</th><th>R</th>
+          <th>Sim</th><th>C</th><th>B-4</th><th>M</th><th>R</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>OPT-1.3B</td><td>-</td><td>0.31</td><td>0.23</td><td>5.62</td><td>4.83</td><td>-</td><td>0.16</td><td>0.13</td><td>0.24</td><td>3.56</td><td>-</td><td>0.0</td><td>0.84</td><td>8.40</td><td>11.7</td></tr>
+        <tr><td>OPT-2.7B</td><td>-</td><td>0.38</td><td>0.39</td><td>7.38</td><td>6.28</td><td>-</td><td>0.10</td><td>0.26</td><td>3.59</td><td>4.35</td><td>-</td><td>0.11</td><td>0.00</td><td>6.60</td><td>12.32</td></tr>
+        <tr><td>OPT-6.7B</td><td>-</td><td>0.25</td><td>0.43</td><td>6.88</td><td>6.16</td><td>-</td><td>0.00</td><td>0.28</td><td>3.65</td><td>3.94</td><td>-</td><td>0.06</td><td>1.13</td><td>8.99</td><td>16.96</td></tr>
+        <tr><td>LLAMA-7B</td><td>-</td><td>0.27</td><td>0.50</td><td>7.81</td><td>6.68</td><td>-</td><td>0.04</td><td>0.29</td><td>3.53</td><td>4.71</td><td>-</td><td>0.20</td><td>0.92</td><td>7.00</td><td>12.31</td></tr>
+        <tr><td>LL3DA*</td><td>48.2</td><td>145.9</td><td>22.2</td><td>40.9</td><td>36.7</td><td>50.2</td><td>65.1</td><td>7.1</td><td>20.8</td><td>32.2</td><td><b>66.4</b></td><td>0.2</td><td>3.0</td><td>19.4</td><td>18.4</td></tr>
+        <tr class="highlight-blue"><td><b>Ours</b></td><td><b>72.3</b></td><td><b>270.1</b></td><td><b>31.5</b></td><td><b>55.7</b></td><td><b>48.6</b></td><td><b>59.0</b></td><td><b>220.4</b></td><td><b>20.3</b></td><td><b>44.5</b></td><td><b>48.0</b></td><td>65.8</td><td><b>0.8</b></td><td><b>6.4</b></td><td><b>23.5</b></td><td><b>21.1</b></td></tr>
+      </tbody>
+    </table>
+</div>
+
+<div class="tab-content2">
+  <table>
+  <caption><b>Evaluation on <span style="text-transform: uppercase;">object-centric</span> LL3DA benchmarks</b></caption>
+  <thead>
+    <tr>
+      <th></th>
+      <th colspan="3"><b>ScanRefer</b></th>
+      <th colspan="3"><b>ScanQA</b></th>
+      <th colspan="3"><b>Nr3D</b></th>
+    </tr>
+    <tr>
+      <th>Model</th>
+      <th>Sim</th><th>M</th><th>R</th>
+      <th>EM1</th><th>M</th><th>R</th>
+      <th>Sim</th><th>M</th><th>R</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Scan2Cap</td><td>-</td><td>21.4</td><td>43.5</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+    </tr>
+    <tr>
+      <td>VoteNet+MCAN</td><td>-</td><td>-</td><td>-</td><td>17.3</td><td>11.4</td><td>29.8</td><td>-</td><td>-</td><td>-</td>
+    </tr>
+    <tr>
+      <td>ScanQA</td><td>-</td><td>-</td><td>-</td><td>-</td><td>13.14</td><td>33.3</td><td>-</td><td>-</td><td>-</td>
+    </tr>
+    <tr>
+      <td>3D-LLM</td><td>-</td><td>13.1</td><td>33.2</td><td><b>19.3</b></td><td>13.8</td><td>34.0</td><td>-</td><td>-</td><td>-</td>
+    </tr>
+    <tr>
+      <td>3D-VLP</td><td>-</td><td>-</td><td>-</td><td>-</td><td>13.5</td><td>34.5</td><td>-</td><td>-</td><td>-</td>
+    </tr>
+    <tr>
+      <td>Scene-LLM</td><td>-</td><td>21.8</td><td>45.6</td><td>-</td><td>15.8</td><td>-</td><td>-</td><td>-</td><td>-</td>
+    </tr>
+    <tr>
+      <td>LL3DA*</td><td>55.9</td><td>51.6</td><td>54.8</td><td>14.3</td><td>22.8</td><td>34.7</td><td>48.1</td><td>5.8</td><td>9.9</td>
+    </tr>
+    <tr class="highlight-blue">
+      <td><b>Ours</b></td><td>59.1</td><td>52.4</td><td>57.4</td><td>14.4</td><td>22.9</td><td>34.8</td><td>48.2</td><td>20.8</td><td>19.2</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="tab-content2">
+  <table>
+  <thead>
+    <tr>
+      <th>Model</th>
+      <th>Accuracy (%)</th>
+      <th>EM</th>
+      <th>CIDEr</th>
+      <th>METEOR</th>
+      <th>ROUGE</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>LL3DA</td>
+      <td>4.2</td>
+      <td>1.5</td>
+      <td>54.4</td>
+      <td>25.5</td>
+      <td>26.8</td>
+    </tr>
+    <tr class="highlight-blue">
+      <td><b>Ours</b></td>
+      <td>24.1</td>
+      <td>9.3</td>
+      <td>120.0</td>
+      <td>35.2</td>
+      <td>47.3</td>
+    </tr>
+    <tr>
+      <td><i>Improvement %</i></td>
+      <td>+474.0%</td>
+      <td>+520.0%</td>
+      <td>+120.6%</td>
+      <td>+38.0%</td>
+      <td>+76.5%</td>
+    </tr>
+  </tbody>
+</table>
+ 
+</div>
+ <!-- Metric Legend (Two Columns) -->
+<div style="margin-top: 1em;" class="remark">
+  <strong>Legend:</strong>
+  <div style="display: flex; flex-wrap: wrap; gap: 2em; font-size: 0.95em; margin-top: 0.5em;">
+    <ul style="list-style: none; padding-left: 0; flex: 1;">
+      <li><strong>EM1:</strong> Top-1 Exact Match</li>
+      <li><strong>EM:</strong> Exact Match</li>
+      
+    </ul>
+    <ul style="list-style: none; padding-left: 0; flex: 1;">
+      <li><strong>C:</strong> CIDEr</li>      
+      <li><strong>B-4:</strong> BLEU-4</li>
+      <li><strong>M:</strong> METEOR</li>
+    </ul>
+    <ul style="list-style: none; padding-left: 0; flex: 1;">
+      <li><strong>R:</strong> ROUGE</li>
+      <li><strong>Sim:</strong> Sentence-BERT Similarity</li>
+      
+    </ul>
+  </div>
+
+</div>
+</div>
+  </div>
+</section>
+
+
+<section class="hero qualitative">
+  <div class="container is-max-desktop ">
+    <div class="hero-body has-text-centered">
+        <h2 class="title is-3">Qualitative Results</h2> 
+   
+<div class="tabs_outer">
+  <button class="tab_outer active" onclick="switchTabOuter(0)">Scene-Centric Tasks</button>
+  <button class="tab_outer" onclick="switchTabOuter(1)">Object-Centric Tasks</button>
+</div>
+
+<div class="tab_outer-content active">
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab(0)">Situated QA </button>
+  <button class="tab" onclick="switchTab(1)">Planning</button>
+  <button class="tab" onclick="switchTab(2)">Dialog</button>
+  <button class="tab" onclick="switchTab(3)">Scene Caption</button>
+</div>
+
+<div class="tab-content active">
+  <div class="content has-text-justified">
+      <img src="static/images/sqa3d.png" class="interpolation-image">
+      <p>   
+      </p>
+    </div>
+</div>
+
+<div class="tab-content">
+  <div class="content has-text-justified">
+      <img src="static/images/plan.png" class="interpolation-image">
+      <p>   
+      </p>
+    </div>
+
+</div>
+
+<div class="tab-content">
+  <div class="content has-text-justified">
+      <img src="static/images/dialog.png" class="interpolation-image">
+      <p>   
+      </p>
+    </div>
+</div>
+
+<div class="tab-content">
+  <div class="content has-text-justified">
+      <img src="static/images/scene_cap.png" class="interpolation-image">
+      <p>   
+      </p>
+    </div>
+
+</div>
+
+
+  
+</div>
+<div class="tab_outer-content">
+
+<div class="tabs_obj">
+  <button class="tab_obj active" onclick="switchTabObj(0)">Object Caption</button>
+  <button class="tab_obj" onclick="switchTabObj(1)">Question-Answering</button>
+</div>
+
+
+<div class="tab_obj-content active">
+  <div class="content has-text-justified">
+      <img src="static/images/obj_cap.png" class="interpolation-image">
+      <p>   
+      </p>
+    </div>
+</div>
+
+<div class="tab_obj-content">
+  <div class="content has-text-justified">
+      <img src="static/images/qa.png" class="interpolation-image">
+      <p>   
+      </p>
+    </div>
+</div>
+</div>
+</div>
+
+
+
+
+
+</div>
+  </div>
+</section>
+
+
+
+
+
+
+
+<section class="section">
+ 
+
+  
+
+
+
+  <h2 class="title is-3">BibTeX</h2>
+  <pre><code>
+    @article{halacheva2025gaussianvlm,
+      title={GaussianVLM: Scene-centric 3D Vision-Language Models using Language-aligned Gaussian Splats for Embodied Reasoning and Beyond},
+      author={Anna-Maria Halacheva and Jan-Nico Zaech and Xi Wang and Danda Pani Paudel and Luc Van Gool},
+      year={2025},
+      journal={arXiv preprint arXiv:2507.00886},
+    }
+  </code></pre>
+
+</section>
+
+
+<footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            This website is licensed under a <a rel="license"
+              href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+              Commons Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+          <p>
+            It borrows the source code of <a href="https://github.com/nerfies/nerfies.github.io">this website</a>.
+            We would like to thank Utkarsh Sinha and Keunhong Park.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+
+<script>
+  function switchTab(index) {
+    const tabs = document.querySelectorAll('.tab');
+    const contents = document.querySelectorAll('.tab-content');
+    tabs.forEach((tab, i) => {
+      tab.classList.toggle('active', i === index);
+      contents[i].classList.toggle('active', i === index);
+    });
+  }
+
+  function switchTab2(index) {
+    const tabs = document.querySelectorAll('.tab2');
+    const contents = document.querySelectorAll('.tab-content2');
+    tabs.forEach((tab, i) => {
+      tab.classList.toggle('active', i === index);
+      contents[i].classList.toggle('active', i === index);
+    });
+  }
+
+  function switchTabOuter(index) {
+    const tabs = document.querySelectorAll('.tab_outer');
+    const contents = document.querySelectorAll('.tab_outer-content');
+    tabs.forEach((tab, i) => {
+      tab.classList.toggle('active', i === index);
+      contents[i].classList.toggle('active', i === index);
+    });
+  }
+
+  function switchTabObj(index) {
+    const tabs = document.querySelectorAll('.tab_obj');
+    const contents = document.querySelectorAll('.tab_obj-content');
+    tabs.forEach((tab, i) => {
+      tab.classList.toggle('active', i === index);
+      contents[i].classList.toggle('active', i === index);
+    });
+  }
+
+  function showInfo(box) {
+    const infoBox = document.getElementById('info-box');
+    if (box === 'box1') {
+      infoBox.innerHTML = `<strong>Box 1</strong><br>This region corresponds to XYZ...`;
+    } else if (box === 'box2') {
+      infoBox.innerHTML = `<strong>Box 2</strong><br>This region corresponds to ABC...`;
+    }
+  }
+
+  function toggleInfo(button) {
+    const content = button.nextElementSibling;
+    if (content.style.display === "block") {
+      content.style.display = "none";
+    } else {
+      content.style.display = "block";
+    }
+  }
+</script>
+
+</body>
+</html>
+
+
